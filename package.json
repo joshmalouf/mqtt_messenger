@@ -1,0 +1,25 @@
+{
+  "name": "mqtt_messenger_ts",
+  "version": "1.0.0",
+  "description": "An script to send an infinite set of mqtt messages to the GCS mqtt service",
+  "main": "messenger.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsc",
+    "watch:build": "tsc --watch",
+    "watch:server": "nodemon ./dist/messenger.js --watch './dist'",
+    "start": "npm-run-all clean build --parallel watch:build watch:server --print-label"
+  },
+  "author": "Josh Malouf",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/pubsub": "^0.18.0",
+    "jsonwebtoken": "^8.2.1",
+    "mqtt": "^2.17.0"
+  },
+  "devDependencies": {
+    "@types/google-cloud__pubsub": "^0.14.1",
+    "@types/jsonwebtoken": "^7.2.7",
+    "npm-run-all": "^4.1.2"
+  }
+}
