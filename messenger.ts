@@ -1,8 +1,8 @@
 // Import the necessary basic modules
 import { readFileSync } from 'fs';
 import { sign }  from 'jsonwebtoken'
-import { setInterval } from 'timers';
 import { connect } from 'mqtt';
+import { datagen } from './datagen';
 import { Observable, merge, Observer} from 'rxjs';
 
 // Set the Environment
@@ -19,50 +19,6 @@ import {
     Log } from './dataset';
 
 const configSub = SUBS.CONFIG;
-
-let eventMessage$: Observable<Data>;
-let stateMessage$: Observable<State>;
-let logMessage$: Observable<Log>;
-let message$: Observable<any>;
-
-
-function messageGen () {
-    console.log("Message Gen Started...")
-
-    eventMessage$ = Observable.create ((obs: Observer<Data>) => {
-        setInterval(() => {
-            let currentData: Data = {
-                sampleTime: Date.now(),
-                datapoint1: Math.random() *100,
-                datapoint2: Math.random() *200,
-                datapoint3: Math.random() *300
-            }
-            obs.next(currentData);
-        },5000)
-    })
-
-    stateMessage$ = Observable.create ((obs: Observer<State>) => {
-        setInterval(() => {
-            let currentData: State = {
-                setpoint1: 150* Math.random() ,
-                setpoint2: 450* Math.random()
-            }
-            obs.next(currentData);
-        },1000*30)
-    })
-
-    logMessage$ = Observable.create ((obs: Observer<Log>) => {
-        setInterval(() => {
-            let currentData: Log = {
-                timestamp: Date.now(),
-                message: `Something worth logging happened ${Date.now()}`
-            }
-            obs.next(currentData);
-        },10000)
-    })
-
-    message$ = merge(eventMessage$, stateMessage$, logMessage$);
-}
 
 let messageType: String = 'events';
 
@@ -107,13 +63,12 @@ client.on('connect', (success: boolean) => {
         //TOD0: Persist the logging
     } else {
         console.log('Client connected...');
-        messageGen();
-        publish();
+        publish(datagen());
     }
 });
 
-function publish() {
-    console.log("Subscribed to Messages...");
+function publish(message$: Observable<any>) {
+    console.log("Subscribing to local Messages...");
     message$.subscribe(m => {
         let payload = m;
         console.log('Publishing message:', payload);
