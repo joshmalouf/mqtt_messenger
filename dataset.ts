@@ -1,6 +1,16 @@
-export class DataSet {
- sampleTime: number = Date.now();
- datapoint1: number = Math.random() * 100;
- datapoint2: number = Math.random() * 200;
- datapoint3: number = Math.random() * 300;
+export interface Data {
+ sampleTime: number;
+ datapoint1: number;
+ datapoint2: number;
+ datapoint3: number;
+}
+
+export interface State {
+    setpoint1: number;
+    setpoint2: number;
+}
+
+export interface Log {
+    timestamp: number;
+    message: string;
 }
