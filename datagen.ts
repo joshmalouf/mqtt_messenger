@@ -46,14 +46,14 @@ export function DataSource() {
                 payload: currentData
             }
             obs.next(currentMessage);
-        },1000*30)
+        },1000 * 30)
     })
 
     logMessage$ = Observable.create ((obs: Observer<LogMessage>) => {
         setInterval(() => {
             let currentData: Log = {
                 timestamp: Date.now(),
-                message: `Something worth logging happened ${Date.now()}`
+                message: `Something worth logging happened ${Date.now().toLocaleString}`
             }
 
             let currentMessage: LogMessage = {
