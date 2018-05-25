@@ -1,3 +1,5 @@
+import { Timestamp, Observable } from "rxjs";
+
 export interface Data {
  sampleTime: number;
  datapoint1: number;
@@ -20,12 +22,12 @@ export interface StateMessage {
     topic: string
 }
 
-export interface Log {
+export interface LogEntry {
     timestamp: number;
     message: string;
 }
 
 export interface LogMessage {
-    payload: Log,
+    payload: LogEntry,
     topic: string
 }

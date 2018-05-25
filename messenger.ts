@@ -4,7 +4,7 @@ import { sign }  from 'jsonwebtoken'
 import { connect } from 'mqtt';
 const LevelStore = require('mqtt-level-store');
 import { DataSource } from './datagen';
-import { Observable, merge, Observer} from 'rxjs';
+import { Observable } from 'rxjs';
 
 // Set the Environment
 import { 
@@ -30,20 +30,23 @@ const connectionArgs = {
 };
 
 // Create a client, and connect to the Google MQTT bridge.
-let iatTime = Date.now() / 1000;
+let iatTime = Date.now();
 let client = connect(connectionArgs);
+
+// Set up the traffic control
+let backOffTime = 0;
+let shouldBackOff = false;
+let publishDelay = 0;
 
 // Subscribe to the /devices/{device-id}/config topic to receive config updates.
 client.subscribe(SUBS.CONFIG);
 
-// Wiat for response events and process
+// Wait for response events and process
 client.on('connect', (success: boolean) => {
     if (!success) {
         console.log('Client not connected...');
         //TODO: Persist the logging
-        //TODO: Handle JWT refreshing
         //TODO: Handle Cert refreshing
-        //TODO: Handle Backoff as necessary
     } else {
         console.log('Client connected...');
         publish(DataSource());
@@ -53,6 +56,7 @@ client.on('connect', (success: boolean) => {
 
 client.on('close', () => {
     console.log('close');
+    shouldBackOff = true;
     //TODO: Persist Logging
 });
   
@@ -82,11 +86,30 @@ client.on('packetsend', (packet) => {
 });
 
 
-function publish(message$: Observable<any>) {
-    console.log("Subscribing to local Messages...");
+function publish(message$: Observable<any>)  {
+    console.log("Subscribing to the Device Messages...");
     message$.subscribe(mes => {
-        client.publish(mes.topic, JSON.stringify(mes.payload), { qos: 1 });
-        console.log('Publishing message:', mes.payload);
+        let tokenAlive = (Date.now() - iatTime)/1000 * 3600;
+        if (tokenAlive > DEVICE.TOKEN_LIFE) {
+            console.log('Refreshing JWT..')
+            client.end()
+            iatTime = Date.now()
+            client = connect(connectionArgs);
+        }
+        setTimeout(() => { 
+            client.publish(mes.topic, JSON.stringify(mes.payload), { qos: 1 }, (err) => {
+                if(!err) {
+                    shouldBackOff = false;
+                    backOffTime = 0;
+                    console.log('Publishing message:', mes.payload);
+                } else {
+                    shouldBackOff = true;
+                    backOffTime *= 2;
+                    publishDelay = 1000 * (backOffTime + Math.random());
+                    console.log(`Traffic delay of ${publishDelay/1000} seconds applied`)
+                }
+            });
+        }, publishDelay)
     })
 }
 

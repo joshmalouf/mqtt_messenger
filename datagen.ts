@@ -1,12 +1,36 @@
-import { Observable, merge, Observer} from 'rxjs';
+import { Observable, merge, Observer, BehaviorSubject } from 'rxjs';
 import { Topics } from './environment'
 
 // Get the Data and Message type definitions
 import { 
     Data, DataMessage,
     State, StateMessage,
-    Log, LogMessage
+    LogEntry, LogMessage
 } from './dataset';
+
+const logMessage$$ = new BehaviorSubject<LogMessage>(
+    {
+    payload:
+        {
+        timestamp: Date.now(),
+        message:"Logger Re/Started"
+        },
+    topic:"Topic"
+    }
+)
+
+function newLogMessage(message: string) {
+    let currentData: LogEntry = {
+        timestamp: Date.now(),
+        message: message
+    }
+
+    let currentMessage: LogMessage = {
+        topic: Topics.LOG,
+        payload: currentData
+    }
+    logMessage$$.next(currentMessage)
+}
 
 export function DataSource() {
 
@@ -49,9 +73,9 @@ export function DataSource() {
         },1000 * 30)
     })
 
-    logMessage$ = Observable.create ((obs: Observer<LogMessage>) => {
+   /*  logMessage$ = Observable.create ((obs: Observer<LogMessage>) => {
         setInterval(() => {
-            let currentData: Log = {
+            let currentData: LogEntry = {
                 timestamp: Date.now(),
                 message: `Something worth logging happened ${Date.now().toLocaleString}`
             }
@@ -62,7 +86,7 @@ export function DataSource() {
             }
             obs.next(currentMessage);
         },1000 * 10)
-    })
+    }) */
 
-    return merge(eventMessage$, stateMessage$, logMessage$);
+    return merge(eventMessage$, stateMessage$, logMessage$$);
 }
