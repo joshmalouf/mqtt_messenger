@@ -8,29 +8,29 @@ import {
     LogEntry, LogMessage
 } from './dataset';
 
-const logMessage$$ = new BehaviorSubject<LogMessage>(
-    {
-    payload:
-        {
-        timestamp: Date.now(),
-        message:"Logger Re/Started"
-        },
-    topic:"Topic"
-    }
-)
+// const logMessage$$ = new BehaviorSubject<LogMessage>(
+//     {
+//     payload:
+//         {
+//         timestamp: Date.now(),
+//         message:"Logger Re/Started"
+//         },
+//     topic:"Topic"
+//     }
+// )
 
-function newLogMessage(message: string) {
-    let currentData: LogEntry = {
-        timestamp: Date.now(),
-        message: message
-    }
+// function newLogMessage(message: string) {
+//     let currentData: LogEntry = {
+//         timestamp: Date.now(),
+//         message: message
+//     }
 
-    let currentMessage: LogMessage = {
-        topic: Topics.LOG,
-        payload: currentData
-    }
-    logMessage$$.next(currentMessage)
-}
+//     let currentMessage: LogMessage = {
+//         topic: Topics.LOG,
+//         payload: currentData
+//     }
+//     logMessage$$.next(currentMessage)
+// }
 
 export function DataSource() {
 
@@ -88,5 +88,5 @@ export function DataSource() {
         },1000 * 10)
     }) */
 
-    return merge(eventMessage$, stateMessage$, logMessage$$);
+    return merge(eventMessage$, stateMessage$);
 }

@@ -89,14 +89,14 @@ client.on('packetsend', (packet) => {
 function publish(message$: Observable<any>)  {
     console.log("Subscribing to the Device Messages...");
     message$.subscribe(mes => {
-        let tokenAlive = (Date.now() - iatTime)/1000 * 3600;
+        let tokenAlive = (Date.now() - iatTime)/1000/3600;
         if (tokenAlive > DEVICE.TOKEN_LIFE) {
             console.log('Refreshing JWT..')
             client.end()
             iatTime = Date.now()
             client = connect(connectionArgs);
         }
-        setTimeout(() => { 
+        setTimeout(() => {   
             client.publish(mes.topic, JSON.stringify(mes.payload), { qos: 1 }, (err) => {
                 if(!err) {
                     shouldBackOff = false;
@@ -109,7 +109,7 @@ function publish(message$: Observable<any>)  {
                     console.log(`Traffic delay of ${publishDelay/1000} seconds applied`)
                 }
             });
-        }, publishDelay)
+        }, publishDelay, mes)
     })
 }
 
